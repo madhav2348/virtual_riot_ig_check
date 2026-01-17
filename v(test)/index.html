@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .profile-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .profile-image::before {
+            content: '';
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: white;
+        }
+
+        .profile-placeholder {
+            font-size: 48px;
+            color: #ccc;
+            z-index: 1;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .profile-handle {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .input-section {
+            margin-bottom: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .buttons-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+        }
+
+        .download-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .download-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.5s ease;
+        }
+
+        .download-btn:hover:not(:disabled)::before {
+            left: 100%;
+        }
+
+        .btn-icon {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+
+        .story-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+        }
+
+        .video-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+        }
+
+        .reel-btn {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            box-shadow: 0 4px 12px rgba(67, 233, 123, 0.4);
+        }
+
+        .status-message {
+            margin-top: 16px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .status-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 24px;
+            }
+
+            .profile-image {
+                width: 100px;
+                height: 100px;
+            }
+
+            .profile-image::before {
+                width: 90px;
+                height: 90px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="profile-section">
+            <div class="profile-image">
+                <span class="profile-placeholder">👤</span>
+            </div>
+            <div class="profile-name">Instagram Downloader</div>
+            <div class="profile-handle">Download Stories, Videos & Reels</div>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label class="input-label">Instagram URL</label>
+                <input type="text" id="urlInput" class="input-field" placeholder="Paste Instagram URL here...">
+            </div>
+        </div>
+
+        <div class="buttons-section">
+            <button class="download-btn story-btn" onclick="downloadContent('story')" id="storyBtn">
+                <span class="btn-icon">📖</span>
+                <span id="storyText">Download Story</span>
+            </button>
+            <button class="download-btn video-btn" onclick="downloadContent('video')" id="videoBtn">
+                <span class="btn-icon">🎬</span>
+                <span id="videoText">Download Video</span>
+            </button>
+            <button class="download-btn reel-btn" onclick="downloadContent('reel')" id="reelBtn">
+                <span class="btn-icon">🎥</span>
+                <span id="reelText">Download Reel</span>
+            </button>
+        </div>
+
+        <div class="status-message" id="statusMessage"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://instagram-scraper-api2.p.rapidapi.com/v1';
+        const API_KEY = 'YOUR_RAPIDAPI_KEY_HERE'; // You need to get this from RapidAPI
+
+        function showMessage(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message ${type}`;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusEl.className = 'status-message';
+                }, 5000);
+            }
+        }
+
+        function setButtonLoading(buttonId, textId, isLoading) {
+            const btn = document.getElementById(buttonId);
+            const text = document.getElementById(textId);
+            
+            if (isLoading) {
+                btn.disabled = true;
+                text.innerHTML = '<span class="loading"></span>';
+            } else {
+                btn.disabled = false;
+                const buttonTexts = {
+                    storyText: 'Download Story',
+                    videoText: 'Download Video',
+                    reelText: 'Download Reel'
+                };
+                text.textContent = buttonTexts[textId];
+            }
+        }
+
+        function extractUsername(url) {
+            const match = url.match(/instagram\.com\/([^\/\?]+)/);
+            return match ? match[1] : null;
+        }
+
+        function extractPostId(url) {
+            const match = url.match(/\/p\/([^\/\?]+)|\/reel\/([^\/\?]+)|\/tv\/([^\/\?]+)/);
+            return match ? (match[1] || match[2] || match[3]) : null;
+        }
+
+        async function downloadContent(type) {
+            const url = document.getElementById('urlInput').value.trim();
+            
+            if (!url) {
+                showMessage('Please enter an Instagram URL', 'error');
+                return;
+            }
+
+            if (!url.includes('instagram.com')) {
+                showMessage('Please enter a valid Instagram URL', 'error');
+                return;
+            }
+
+            const buttonMap = {
+                story: { btn: 'storyBtn', text: 'storyText' },
+                video: { btn: 'videoBtn', text: 'videoText' },
+                reel: { btn: 'reelBtn', text: 'reelText' }
+            };
+
+            const { btn, text } = buttonMap[type];
+            setButtonLoading(btn, text, true);
+            showMessage(`Fetching ${type}...`, 'info');
+
+            try {
+                // This is a demonstration. You'll need to integrate with a real Instagram API
+                // Popular options: RapidAPI Instagram APIs, or build your own backend
+                
+                await simulateDownload(url, type);
+                
+            } catch (error) {
+                showMessage(`Error: ${error.message}`, 'error');
+            } finally {
+                setButtonLoading(btn, text, false);
+            }
+        }
+
+        async function simulateDownload(url, type) {
+            // Simulate API call delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // In production, you would call your backend API here
+            // Example structure:
+            /*
+            const response = await fetch('YOUR_BACKEND_API_URL', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url, type })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Download the file
+                const link = document.createElement('a');
+                link.href = data.downloadUrl;
+                link.download = `instagram_${type}_${Date.now()}.mp4`;
+                link.click();
+                showMessage('Download started!', 'success');
+            } else {
+                throw new Error(data.message);
+            }
+            */
+            
+            // For demonstration purposes:
+            showMessage(
+                `⚠️ Demo Mode: To enable actual downloads, you need to:\n\n` +
+                `1. Sign up for a RapidAPI account\n` +
+                `2. Subscribe to an Instagram API (e.g., "Instagram Scraper API")\n` +
+                `3. Replace 'YOUR_RAPIDAPI_KEY_HERE' with your actual API key\n` +
+                `4. Or build your own backend using instagram-private-api or similar tools\n\n` +
+                `URL detected: ${url}\n` +
+                `Type: ${type}`,
+                'info'
+            );
+        }
+
+        // Alternative implementation using RapidAPI (requires API key)
+        async function downloadWithRapidAPI(url, type) {
+            const postId = extractPostId(url);
+            
+            if (!postId) {
+                throw new Error('Could not extract post ID from URL');
+            }
+
+            const options = {
+                method: 'GET',
+                headers: {
+                    'X-RapidAPI-Key': API_KEY,
+                    'X-RapidAPI-Host': 'instagram-scraper-api2.p.rapidapi.com'
+                }
+            };
+
+            let endpoint;
+            if (type === 'story') {
+                const username = extractUsername(url);
+                endpoint = `${API_URL}/stories?username=${username}`;
+            } else {
+                endpoint = `${API_URL}/post?shortcode=${postId}`;
+            }
+
+            const response = await fetch(endpoint, options);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to fetch content');
+            }
+
+            // Extract video URL from response and trigger download
+            let videoUrl;
+            if (type === 'story') {
+                videoUrl = data.items[0]?.video_versions?.[0]?.url;
+            } else {
+                videoUrl = data.video_url;
+            }
+
+            if (!videoUrl) {
+                throw new Error('No video found in this post');
+            }
+
+            // Trigger download
+            const link = document.createElement('a');
+            link.href = videoUrl;
+            link.download = `instagram_${type}_${Date.now()}.mp4`;
+            link.target = '_blank';
+            link.click();
+
+            showMessage('Download started successfully!', 'success');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .profile-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .profile-image::before {
+            content: '';
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: white;
+        }
+
+        .profile-placeholder {
+            font-size: 48px;
+            color: #ccc;
+            z-index: 1;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .profile-handle {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .buttons-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+        }
+
+        .download-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .download-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.5s ease;
+        }
+
+        .download-btn:hover:not(:disabled)::before {
+            left: 100%;
+        }
+
+        .btn-icon {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+
+        .story-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+        }
+
+        .video-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+        }
+
+        .reel-btn {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            box-shadow: 0 4px 12px rgba(67, 233, 123, 0.4);
+        }
+
+        .status-message {
+            margin-top: 16px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .status-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .media-container {
+            margin-top: 24px;
+            display: none;
+        }
+
+        .media-container.show {
+            display: block;
+        }
+
+        .media-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .media-count {
+            font-size: 14px;
+            color: #888;
+            font-weight: 400;
+        }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+
+        .media-item {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            background: #f5f5f5;
+            aspect-ratio: 1;
+        }
+
+        .media-item:hover {
+            transform: scale(1.05);
+        }
+
+        .media-thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .media-type-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .media-date {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+        }
+
+        .no-media-message {
+            text-align: center;
+            padding: 32px;
+            color: #888;
+            font-size: 14px;
+        }
+
+        .back-button {
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .back-button:hover {
+            background: #d0d0d0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 24px;
+            }
+
+            .profile-image {
+                width: 100px;
+                height: 100px;
+            }
+
+            .profile-image::before {
+                width: 90px;
+                height: 90px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="profile-section">
+            <div class="profile-image">
+                <span class="profile-placeholder">👤</span>
+            </div>
+            <div class="profile-name">Instagram Downloader</div>
+            <div class="profile-handle">Download Stories, Videos & Reels</div>
+        </div>
+
+        <div class="buttons-section">
+            <button class="download-btn story-btn" onclick="checkContent('story')" id="storyBtn">
+                <span class="btn-icon">📖</span>
+                <span id="storyText">Check Story</span>
+            </button>
+            <button class="download-btn video-btn" onclick="checkContent('video')" id="videoBtn">
+                <span class="btn-icon">🎬</span>
+                <span id="videoText">Check Video</span>
+            </button>
+            <button class="download-btn reel-btn" onclick="checkContent('reel')" id="reelBtn">
+                <span class="btn-icon">🎥</span>
+                <span id="reelText">Check Reel</span>
+            </button>
+        </div>
+
+        <div class="status-message" id="statusMessage"></div>
+
+        <div class="media-container" id="mediaContainer">
+            <div class="media-header">
+                <span id="mediaTitle">Media</span>
+                <button class="back-button" onclick="hideMedia()">← Back</button>
+            </div>
+            <div class="media-grid" id="mediaGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        const RAPIDAPI_KEY = 'YOUR_RAPIDAPI_KEY_HERE';
+        const RAPIDAPI_HOST = 'instagram-scraper-api2.p.rapidapi.com';
+        
+        let currentMediaData = [];
+
+        function showMessage(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message ${type}`;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusEl.className = 'status-message';
+                }, 5000);
+            }
+        }
+
+        function setButtonLoading(buttonId, textId, isLoading) {
+            const btn = document.getElementById(buttonId);
+            const text = document.getElementById(textId);
+            
+            if (isLoading) {
+                btn.disabled = true;
+                text.innerHTML = '<span class="loading"></span>';
+            } else {
+                btn.disabled = false;
+                const buttonTexts = {
+                    storyText: 'Check Story',
+                    videoText: 'Check Video',
+                    reelText: 'Check Reel'
+                };
+                text.textContent = buttonTexts[textId];
+            }
+        }
+
+        function hideMedia() {
+            document.getElementById('mediaContainer').classList.remove('show');
+            currentMediaData = [];
+        }
+
+        function displayMedia(mediaList, type) {
+            const container = document.getElementById('mediaContainer');
+            const grid = document.getElementById('mediaGrid');
+            const title = document.getElementById('mediaTitle');
+            
+            grid.innerHTML = '';
+            
+            if (mediaList.length === 0) {
+                grid.innerHTML = '<div class="no-media-message">No media found</div>';
+                title.innerHTML = `${type.charAt(0).toUpperCase() + type.slice(1)}s <span class="media-count">(0)</span>`;
+            } else {
+                title.innerHTML = `${type.charAt(0).toUpperCase() + type.slice(1)}s <span class="media-count">(${mediaList.length})</span>`;
+                
+                mediaList.forEach((media, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'media-item';
+                    item.onclick = () => playMedia(index);
+                    
+                    const thumbnail = media.thumbnail || media.url;
+                    const isVideo = media.type === 'video';
+                    
+                    item.innerHTML = `
+                        <img src="${thumbnail}" alt="${type}" class="media-thumbnail" />
+                        <div class="media-type-badge">${isVideo ? '▶️ Video' : '📷 Image'}</div>
+                        ${media.date ? `<div class="media-date">${media.date}</div>` : ''}
+                    `;
+                    
+                    grid.appendChild(item);
+                });
+            }
+            
+            container.classList.add('show');
+        }
+
+        function playMedia(index) {
+            // Placeholder for playable media functionality
+            const media = currentMediaData[index];
+            showMessage(`Playing media ${index + 1}... (Playable feature coming next!)`, 'info');
+        }
+
+        async function checkContent(type) {
+            // Check if API key is configured
+            if (RAPIDAPI_KEY === 'YOUR_RAPIDAPI_KEY_HERE') {
+                showMessage(
+                    '⚠️ RapidAPI Key Not Configured!\n\n' +
+                    'To use this feature:\n' +
+                    '1. Sign up at RapidAPI.com\n' +
+                    '2. Subscribe to "Instagram Scraper API"\n' +
+                    '3. Replace YOUR_RAPIDAPI_KEY_HERE with your actual API key',
+                    'error'
+                );
+                return;
+            }
+
+            // Prompt user for username/URL
+            const input = prompt(`Enter Instagram username or ${type} URL:`);
+            
+            if (!input) {
+                return;
+            }
+
+            const buttonMap = {
+                story: { btn: 'storyBtn', text: 'storyText' },
+                video: { btn: 'videoBtn', text: 'videoText' },
+                reel: { btn: 'reelBtn', text: 'reelText' }
+            };
+
+            const { btn, text } = buttonMap[type];
+            setButtonLoading(btn, text, true);
+            showMessage(`Checking ${type}s...`, 'info');
+            hideMedia();
+
+            try {
+                const mediaList = await fetchContent(input, type);
+                currentMediaData = mediaList;
+                displayMedia(mediaList, type);
+                showMessage(`Found ${mediaList.length} ${type}(s)`, 'success');
+            } catch (error) {
+                showMessage(`Error: ${error.message}`, 'error');
+            } finally {
+                setButtonLoading(btn, text, false);
+            }
+        }
+
+        function extractUsername(input) {
+            // Extract username from URL or use input as username
+            if (input.includes('instagram.com')) {
+                const patterns = [
+                    /instagram\.com\/stories\/([^\/\?]+)/,
+                    /instagram\.com\/([^\/\?]+)/
+                ];
+                
+                for (const pattern of patterns) {
+                    const match = input.match(pattern);
+                    if (match && match[1] !== 'p' && match[1] !== 'reel' && match[1] !== 'tv') {
+                        return match[1];
+                    }
+                }
+            }
+            return input.replace('@', '');
+        }
+
+        function formatDate(timestamp) {
+            const date = new Date(timestamp * 1000);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) return 'Today';
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays}d ago`;
+            return date.toLocaleDateString();
+        }
+
+        function isWithinLastWeek(timestamp) {
+            const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+            return (timestamp * 1000) > weekAgo;
+        }
+
+        async function fetchContent(input, type) {
+            const username = extractUsername(input);
+            
+            const options = {
+                method: 'GET',
+                headers: {
+                    'X-RapidAPI-Key': RAPIDAPI_KEY,
+                    'X-RapidAPI-Host': RAPIDAPI_HOST
+                }
+            };
+
+            let mediaList = [];
+
+            if (type === 'story') {
+                // Fetch stories
+                const endpoint = `https://${RAPIDAPI_HOST}/v1/stories?username_or_id_or_url=${username}`;
+                const response = await fetch(endpoint, options);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch stories. User may not have active stories.');
+                }
+
+                const data = await response.json();
+                
+                if (data.data && data.data.items) {
+                    mediaList = data.data.items.map(item => ({
+                        url: item.video_versions?.[0]?.url || item.image_versions2?.candidates?.[0]?.url,
+                        thumbnail: item.image_versions2?.candidates?.[0]?.url,
+                        type: item.video_versions ? 'video' : 'image',
+                        date: formatDate(item.taken_at)
+                    }));
+                }
+            } else {
+                // Fetch user posts (videos and reels)
+                const endpoint = `https://${RAPIDAPI_HOST}/v1/posts?username_or_id_or_url=${username}`;
+                const response = await fetch(endpoint, options);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch posts');
+                }
+
+                const data = await response.json();
+                
+                if (data.data && data.data.items) {
+                    // Filter posts based on type and date (last week)
+                    mediaList = data.data.items
+                        .filter(item => {
+                            const isWithinWeek = isWithinLastWeek(item.taken_at);
+                            if (type === 'video') {
+                                return isWithinWeek && item.video_url;
+                            } else if (type === 'reel') {
+                                return isWithinWeek && (item.product_type === 'clips' || item.media_type === 2);
+                            }
+                            return false;
+                        })
+                        .map(item => ({
+                            url: item.video_url,
+                            thumbnail: item.image_versions2?.candidates?.[0]?.url,
+                            type: 'video',
+                            date: formatDate(item.taken_at)
+                        }));
+                }
+            }
+
+            return mediaList;
+        }
+    </script>
+</body>
+</html>

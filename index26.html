@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Downloader</title>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+   
+<script src="script.js" defer></script>
+    <div class="container">
+        <div class="profile-section">
+            <div class="profile-image">
+                <img src="vr_ig.jpeg" alt="">
+            </div>
+            <div class="profile-name"><img src="vrlogo.webp" alt=""></div>
+          
+        </div>
+
+        <div class="buttons-section">
+            <button class="download-btn story-btn" onclick="checkContent('story')" id="storyBtn">
+             
+                <span id="storyText">Check Story</span>
+            </button>
+            <button class="download-btn video-btn" onclick="checkContent('video')" id="videoBtn">
+                
+                <span id="videoText">Check Video</span>
+            </button>
+            <button class="download-btn reel-btn" onclick="checkContent('reel')" id="reelBtn">
+               
+                <span id="reelText">Check Reel</span>
+            </button>
+        </div>
+
+        <div class="status-message" id="statusMessage"></div>
+
+        <div class="media-container" id="mediaContainer">
+            <div class="media-header">
+                <span id="mediaTitle">Media</span>
+                <button class="back-button" onclick="hideMedia()">← Back</button>
+            </div>
+            <div class="media-grid" id="mediaGrid"></div>
+        </div>
+
+        <!-- Modal for playing media -->
+        <div class="modal" id="mediaModal">
+            <button class="nav-btn" style="position: absolute; left: 20px;" onclick="navigateMedia(-1)" id="prevBtn">‹</button>
+            <div class="modal-content">
+                <video id="modalVideo" class="modal-media" controls autoplay style="display: none;"></video>
+                <img id="modalImage" class="modal-media" style="display: none;">
+                <div class="modal-controls">
+                    <button class="modal-btn download-btn-modal" onclick="downloadCurrentMedia()">⬇️ Download</button>
+                    <span class="modal-counter" id="mediaCounter">1 / 1</span>
+                    <button class="modal-btn close-btn" onclick="closeModal()">✕ Close</button>
+                </div>
+            </div>
+            <button class="nav-btn" style="position: absolute; right: 20px;" onclick="navigateMedia(1)" id="nextBtn">›</button>
+        </div>
+    </div>
+
+   
+</body>
+</html>
